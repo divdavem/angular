@@ -89,6 +89,13 @@ function roleSetter(element:Element, value) {
   }
 }
 
+var renameBindingsMap = (function () {
+  var res = StringMapWrapper.create();
+  StringMapWrapper.set(res, "tabindex", "tabIndex");
+  StringMapWrapper.set(res, "inner-html", "innerHTML");
+  return res;
+})();
+
 /**
  * Creates the ElementBinders and adds watches to the
  * ProtoChangeDetector.
@@ -171,6 +178,8 @@ export class ElementBinderBuilder extends CompileStep {
         styleParts = StringWrapper.split(property, DOT_REGEXP);
         styleSuffix = styleParts.length > 2 ?  ListWrapper.get(styleParts, 2) : '';
         setterFn = styleSetterFactory(ListWrapper.get(styleParts, 1), styleSuffix);
+      } else if (StringMapWrapper.contains(renameBindingsMap, property)) {
+        setterFn = reflector.setter(StringMapWrapper.get(renameBindingsMap, property));
       } else if (DOM.hasProperty(compileElement.element, property)) {
         setterFn = reflector.setter(property);
       }
