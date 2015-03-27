@@ -19,6 +19,7 @@ import {XHR} from 'angular2/src/core/compiler/xhr/xhr';
 import {XHRImpl} from 'angular2/src/core/compiler/xhr/xhr_impl';
 import {EventManager, DomEventsPlugin} from 'angular2/src/core/events/event_manager';
 import {HammerGesturesPlugin} from 'angular2/src/core/events/hammer_gestures';
+import {KeyEventsPlugin} from 'angular2/src/core/events/key_events';
 import {Binding} from 'angular2/src/di/binding';
 import {ComponentUrlMapper} from 'angular2/src/core/compiler/component_url_mapper';
 import {UrlResolver} from 'angular2/src/core/compiler/url_resolver';
@@ -87,7 +88,7 @@ function _injectorBindings(appComponentType): List<Binding> {
           [appViewToken]),
       bind(LifeCycle).toFactory((exceptionHandler) => new LifeCycle(exceptionHandler, null, assertionsEnabled()),[ExceptionHandler]),
       bind(EventManager).toFactory((zone) => {
-        var plugins = [new HammerGesturesPlugin(), new DomEventsPlugin()];
+        var plugins = [new HammerGesturesPlugin(), new KeyEventsPlugin(), new DomEventsPlugin()];
         return new EventManager(plugins, zone);
       }, [VmTurnZone]),
       bind(ShadowDomStrategy).toFactory(
