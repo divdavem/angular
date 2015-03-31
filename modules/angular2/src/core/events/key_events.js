@@ -3,8 +3,6 @@ import {isPresent, isBlank, StringWrapper, RegExpWrapper, BaseException, NumberW
 import {StringMapWrapper, ListWrapper} from 'angular2/src/facade/collection';
 import {EventManagerPlugin} from './event_manager';
 
-const DOM_KEY_LOCATION_NUMPAD = 3;
-
 var modifierKeys = ['alt', 'control', 'meta', 'shift'];
 var modifierKeyGetters = {
   'alt': (event) => event.altKey,
@@ -12,50 +10,6 @@ var modifierKeyGetters = {
   'meta': (event) => event.metaKey,
   'shift': (event) => event.shiftKey
 }
-
-// Map to convert some key or keyIdentifier values to what will be returned by getEventKey
-var keyMap = {
-  ' ': 'space', // for readability
-  '.': 'dot', // because '.' is used as a separator in event names
-
-  // The following values are here for cross-browser compatibility and to match the W3C standard
-  // cf http://www.w3.org/TR/DOM-Level-3-Events-key/
-  '\b': 'backspace',
-  '\t': 'tab',
-  '\x7F': 'delete',
-  '\x1B': 'escape',
-  'del': 'delete',
-  'esc': 'escape',
-  'left': 'arrowleft',
-  'right': 'arrowright',
-  'up': 'arrowup',
-  'down':'arrowdown',
-  'menu': 'contextmenu',
-  'scroll' : 'scrolllock',
-  'win': 'os'
-};
-
-// There is a bug in Chrome for numeric keypad keys:
-// https://code.google.com/p/chromium/issues/detail?id=155654
-// 1, 2, 3 ... are reported as A, B, C ...
-var chromeNumKeyPadMap = {
-  'A': '1',
-  'B': '2',
-  'C': '3',
-  'D': '4',
-  'E': '5',
-  'F': '6',
-  'G': '7',
-  'H': '8',
-  'I': '9',
-  'J': '*',
-  'K': '+',
-  'M': '-',
-  'N': '.',
-  'O': '/',
-  '\x60': '0',
-  '\x90': 'numlock'
-};
 
 export class KeyEventsPlugin extends EventManagerPlugin {
   constructor() {
@@ -71,10 +25,10 @@ export class KeyEventsPlugin extends EventManagerPlugin {
     var parsedEvent = KeyEventsPlugin.parseEventName(eventName);
 
     var outsideHandler = KeyEventsPlugin.eventCallback(element, shouldSupportBubble,
-      parsedEvent.fullKey, handler, this.manager.getZone());
+      StringMapWrapper.get(parsedEvent, 'fullKey'), handler, this.manager.getZone());
 
     this.manager.getZone().runOutsideAngular(() => {
-      DOM.on(element, parsedEvent.domEventName, outsideHandler);
+      DOM.on(element, StringMapWrapper.get(parsedEvent, 'domEventName'), outsideHandler);
     });
   }
 
@@ -102,43 +56,20 @@ export class KeyEventsPlugin extends EventManagerPlugin {
     }
 
     return {
-      domEventName: domEventName,
-      fullKey: fullKey
+      'domEventName': domEventName,
+      'fullKey': fullKey
     };
-  }
-
-  static getEventKey(event): string {
-    var key = event.key;
-    if (isBlank(key)) {
-      key = event.keyIdentifier;
-      // keyIdentifier is defined in the old draft of DOM Level 3 Events implemented by Chrome and Safari
-      // cf http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/events.html#Events-KeyboardEvents-Interfaces
-      if (isPresent(key) && StringWrapper.startsWith(key, 'U+')) {
-        key = StringWrapper.fromCharCode(NumberWrapper.parseInt(StringWrapper.substring(key, 2), 16));
-        if (event.location === DOM_KEY_LOCATION_NUMPAD && StringMapWrapper.contains(chromeNumKeyPadMap, key)) {
-          // There is a bug in Chrome for numeric keypad keys:
-          // https://code.google.com/p/chromium/issues/detail?id=155654
-          // 1, 2, 3 ... are reported as A, B, C ...
-          key = StringMapWrapper.get(chromeNumKeyPadMap, key);
-        }
-      }
-      if (isBlank(key)) {
-        key = 'Unidentified';
-      }
-    }
-
-    key = key.toLowerCase();
-
-    if (StringMapWrapper.contains(keyMap, key)) {
-      key = StringMapWrapper.get(keyMap, key);
-    }
-
-    return key;
   }
 
   static getEventFullKey(event): string {
     var fullKey = '';
-    var key = KeyEventsPlugin.getEventKey(event);
+    var key = DOM.getEventKey(event);
+    key = key.toLowerCase();
+    if (key == ' ') {
+      key = 'space'; // for readability
+    } else if (key == '.') {
+      key = 'dot'; // because '.' is used as a separator in event names
+    }
     ListWrapper.forEach(modifierKeys, (modifierName) => {
       if (modifierName != key) {
         var modifierGetter = StringMapWrapper.get(modifierKeyGetters, modifierName);
