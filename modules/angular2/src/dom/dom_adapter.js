@@ -255,6 +255,9 @@ export class DomAdapter {
   getHref(element): string {
     throw _abstract();
   }
+  getEventKey(event): string {
+    throw _abstract();
+  }
   resolveAndSetHref(element, baseUrl:string, href:string) {
     throw _abstract();
   }
