@@ -19,7 +19,7 @@ import {assertNodeType, assertNodeOfPossibleTypes} from './node_assert';
 import {appendChild, insertChild, insertView, processProjectedNode, removeView} from './node_manipulation';
 import {isNodeMatchingSelector} from './node_selector_matcher';
 import {ComponentDef, ComponentTemplate, ComponentType, DirectiveDef, DirectiveType} from './interfaces/definition';
-import {RComment, RElement, RText, Renderer3, RendererFactory3, ProceduralRenderer3, ObjectOrientedRenderer3, RendererStyleFlags3} from './interfaces/renderer';
+import {RElement, RText, Renderer3, RendererFactory3, ProceduralRenderer3, ObjectOrientedRenderer3, RendererStyleFlags3} from './interfaces/renderer';
 import {isDifferent, stringify} from './util';
 import {executeViewHooks, executeContentHooks, queueLifecycleHooks, queueInitHooks, executeInitHooks} from './hooks';
 
@@ -194,15 +194,14 @@ export function createLNode(
 export function createLNode(
     index: null, type: LNodeFlags.View, native: null, lView: LView): LViewNode;
 export function createLNode(
-    index: number, type: LNodeFlags.Container, native: RComment,
+    index: number, type: LNodeFlags.Container, native: null,
     lContainer: LContainer): LContainerNode;
 export function createLNode(
     index: number, type: LNodeFlags.Projection, native: null,
     lProjection: LProjection): LProjectionNode;
 export function createLNode(
-    index: number | null, type: LNodeFlags, native: RText | RElement | RComment | null,
-    state?: null | LView | LContainer | LProjection): LElementNode&LTextNode&LViewNode&
-    LContainerNode&LProjectionNode {
+    index: number | null, type: LNodeFlags, native: RText | RElement | null, state?: null | LView |
+        LContainer | LProjection): LElementNode&LTextNode&LViewNode&LContainerNode&LProjectionNode {
   const parent = isParent ? previousOrParentNode :
                             previousOrParentNode && previousOrParentNode.parent as LNode;
   let query = (isParent ? currentQuery : previousOrParentNode && previousOrParentNode.query) ||
@@ -989,11 +988,14 @@ export function container(
   // If the direct parent of the container is a view, its views (including its comment)
   // will need to be added through insertView() when its parent view is being inserted.
   // For now, it is marked "headless" so we know to append its views later.
-  let comment = renderer.createComment(ngDevMode ? 'container' : '');
   let renderParent: LElementNode|null = null;
   const currentParent = isParent ? previousOrParentNode : previousOrParentNode.parent !;
   ngDevMode && assertNotEqual(currentParent, null, 'currentParent');
-  if (appendChild(currentParent, comment, currentView)) {
+
+  if ((currentParent.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Element &&
+      (currentParent.view !==
+           currentView /* Crossing View Boundaries, it is Component, but add Element of View */
+       || currentParent.data === null /* Regular Element. */)) {
     // we are adding to an Element which is either:
     // - Not a component (will not be re-projected, just added)
     // - View of the Component
@@ -1010,7 +1012,7 @@ export function container(
     query: null
   };
 
-  const node = createLNode(index, LNodeFlags.Container, comment, lContainer);
+  const node = createLNode(index, LNodeFlags.Container, null, lContainer);
 
   if (node.tNode == null) {
     // TODO(misko): implement queryName caching
