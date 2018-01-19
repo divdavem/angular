@@ -69,7 +69,8 @@ function findBeforeNode(node: LNode | null): RNode|null {
     currentNode = null;
     if (parentNode) {
       const parentType = parentNode.flags & LNodeFlags.TYPE_MASK;
-      if (parentType === LNodeFlags.Container || parentType === LNodeFlags.View) {
+      if (parentType === LNodeFlags.Container || parentType === LNodeFlags.View ||
+          parentType === LNodeFlags.Projection) {
         currentNode = parentNode;
       }
     }
@@ -83,29 +84,31 @@ function findBeforeNode(node: LNode | null): RNode|null {
  * @param node The node whose first DOM node must be found
  * @returns The first native node of the given logical node or null if there is none.
  */
-function findFirstNativeNode(initialNode: LNode): RNode|null {
-  const stack: LNode[] = [];
-  let node: LNode|null|undefined = initialNode;
+function findFirstNativeNode(rootNode: LNode): RNode|null {
+  let node: LNode|null = rootNode;
   while (node) {
-    const nodeType = node.flags & LNodeFlags.TYPE_MASK;
-    let child: LNode|null = null;
-    if (nodeType === LNodeFlags.Element) {
+    const type = node.flags & LNodeFlags.TYPE_MASK;
+    let nextNode: LNode|null = null;
+    if (type === LNodeFlags.Element) {
       return node.native;
-    } else if (nodeType === LNodeFlags.Container) {
-      child = (node as LContainerNode).data.views[0];
-    } else if (nodeType === LNodeFlags.View) {
-      child = (node as LViewNode).child;
-    }
-    if (child) {
-      node = child;
+    } else if (type === LNodeFlags.View) {
+      nextNode = (node as LViewNode).child;
+    } else if (type === LNodeFlags.Container) {
+      const childContainerData: LContainer = (node as LContainerNode).data;
+      nextNode = childContainerData.views.length ? childContainerData.views[0].child : null;
+    } else if (type === LNodeFlags.Projection) {
+      nextNode = (node as LProjectionNode).data[0];
     } else {
-      node = stack.pop();
+      nextNode = (node as LViewNode).child;
     }
-    if (node) {
-      const next = node.next;
-      if (next) {
-        stack.push(next);
+    if (nextNode === null) {
+      while (node && !node.next) {
+        node = node.parent;
+        if (node === rootNode) node = null;
       }
+      node = node && node.next;
+    } else {
+      node = nextNode;
     }
   }
   return null;
