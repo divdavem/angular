@@ -54,20 +54,24 @@ export function findNativeParent(containerNode: LContainerNode): RNode|null {
  * @param node The node whose following DOM node must be found.
  * @returns Node before which the provided node should be inserted.
  */
-function findBeforeNode(node: LNode): RNode|null {
-  let currentSibling = node.next;
-  while (currentSibling) {
-    const node = findFirstNativeNode(currentSibling);
-    if (node) {
-      return node;
+function findBeforeNode(node: LNode | null): RNode|null {
+  let currentNode = node;
+  while (currentNode) {
+    let currentSibling = currentNode.next;
+    while (currentSibling) {
+      const nativeNode = findFirstNativeNode(currentSibling);
+      if (nativeNode) {
+        return nativeNode;
+      }
+      currentSibling = currentSibling.next;
     }
-    currentSibling = currentSibling.next;
-  }
-  const parent = node.parent;
-  if (parent) {
-    const parentType = parent.flags & LNodeFlags.TYPE_MASK;
-    if (parentType === LNodeFlags.Container || parentType === LNodeFlags.View) {
-      return findBeforeNode(parent);
+    const parentNode = currentNode.parent;
+    currentNode = null;
+    if (parentNode) {
+      const parentType = parentNode.flags & LNodeFlags.TYPE_MASK;
+      if (parentType === LNodeFlags.Container || parentType === LNodeFlags.View) {
+        currentNode = parentNode;
+      }
     }
   }
   return null;
@@ -79,22 +83,30 @@ function findBeforeNode(node: LNode): RNode|null {
  * @param node The node whose first DOM node must be found
  * @returns The first native node of the given logical node or null if there is none.
  */
-function findFirstNativeNode(node: LNode): RNode|null {
-  const nodeType = node.flags & LNodeFlags.TYPE_MASK;
-  let child: LNode|null = null;
-  if (nodeType === LNodeFlags.Element) {
-    return node.native;
-  } else if (nodeType === LNodeFlags.Container) {
-    child = (node as LContainerNode).data.views[0];
-  } else if (nodeType === LNodeFlags.View) {
-    child = (node as LViewNode).child;
-  }
-  while (child) {
-    const native = findFirstNativeNode(child);
-    if (native) {
-      return native;
+function findFirstNativeNode(initialNode: LNode): RNode|null {
+  const stack: LNode[] = [];
+  let node: LNode|null|undefined = initialNode;
+  while (node) {
+    const nodeType = node.flags & LNodeFlags.TYPE_MASK;
+    let child: LNode|null = null;
+    if (nodeType === LNodeFlags.Element) {
+      return node.native;
+    } else if (nodeType === LNodeFlags.Container) {
+      child = (node as LContainerNode).data.views[0];
+    } else if (nodeType === LNodeFlags.View) {
+      child = (node as LViewNode).child;
     }
-    child = child.next;
+    if (child) {
+      node = child;
+    } else {
+      node = stack.pop();
+    }
+    if (node) {
+      const next = node.next;
+      if (next) {
+        stack.push(next);
+      }
+    }
   }
   return null;
 }
