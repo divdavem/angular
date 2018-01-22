@@ -52,11 +52,14 @@ export function findNativeParent(containerNode: LContainerNode): RNode|null {
  * This is needed in order to insert the given node with insertBefore.
  *
  * @param node The node whose following DOM node must be found.
- * @returns Node before which the provided node should be inserted.
+ * @param stopNode A parent node at which the lookup in the tree should be stopped, or null if the
+ * lookup should not be stopped until the result is found.
+ * @returns Node before which the provided node should be inserted or null if the lookup was stopped
+ * or if there is no native node after the given logical node in the same native parent.
  */
-function findBeforeNode(node: LNode | null): RNode|null {
+function findBeforeNode(node: LNode | null, stopNode: LNode | null): RNode|null {
   let currentNode = node;
-  while (currentNode) {
+  while (currentNode && currentNode !== stopNode) {
     let currentSibling = currentNode.next;
     while (currentSibling) {
       const nativeNode = findFirstNativeNode(currentSibling);
@@ -257,7 +260,15 @@ export function insertView(
   // and we should wait until that parent processes its nodes (otherwise, we will insert this view's
   // nodes twice - once now and once when its parent inserts its views).
   if (container.data.renderParent !== null) {
-    addRemoveViewFromContainer(container, newView, true, findBeforeNode(newView));
+    let beforeNode = findBeforeNode(newView, container);
+    if (!beforeNode) {
+      let containerNextNativeNode = container.data.nextNative;
+      if (containerNextNativeNode === undefined) {
+        containerNextNativeNode = container.data.nextNative = findBeforeNode(container, null);
+      }
+      beforeNode = containerNextNativeNode;
+    }
+    addRemoveViewFromContainer(container, newView, true, beforeNode);
   }
 
   return newView;
@@ -427,7 +438,7 @@ export function insertChild(node: LNode, currentView: LView): void {
        || parent.data === null /* Regular Element. */)) {
     // We only add element if not in View or not projected.
 
-    let nativeSibling: RNode|null = findBeforeNode(node);
+    let nativeSibling: RNode|null = findBeforeNode(node, null);
     const renderer = currentView.renderer;
     (renderer as ProceduralRenderer3).listen ?
         (renderer as ProceduralRenderer3)

@@ -1009,7 +1009,8 @@ export function container(
     next: null,
     parent: currentView,
     dynamicViewCount: 0,
-    query: null
+    query: null,
+    nextNative: undefined
   };
 
   const node = createLNode(index, LNodeFlags.Container, null, lContainer);
@@ -1046,11 +1047,17 @@ export function containerRefreshStart(index: number): void {
   previousOrParentNode = data[index] as LNode;
   ngDevMode && assertNodeType(previousOrParentNode, LNodeFlags.Container);
   isParent = true;
-  (previousOrParentNode as LContainerNode).data.nextIndex = 0;
+  const container = previousOrParentNode as LContainerNode;
+  container.data.nextIndex = 0;
 
   // We need to execute init hooks here so ngOnInit hooks are called in top level views
   // before they are called in embedded views (for backwards compatibility).
   executeInitHooks(currentView);
+
+  container.data.nextIndex = 0;
+  ngDevMode &&
+      assertEqual(
+          container.data.nextNative === undefined, true, 'container.data.nextNative === undefined');
 }
 
 /**
@@ -1068,6 +1075,7 @@ export function containerRefreshEnd(): void {
   }
   ngDevMode && assertNodeType(previousOrParentNode, LNodeFlags.Container);
   const container = previousOrParentNode as LContainerNode;
+  container.data.nextNative = undefined;
   ngDevMode && assertNodeType(container, LNodeFlags.Container);
   const nextIndex = container.data.nextIndex;
   while (nextIndex < container.data.views.length) {
