@@ -217,7 +217,8 @@ export function createLNode(
     nodeInjector: parent ? parent.nodeInjector : null,
     data: isState ? state as any : null,
     query: query,
-    tNode: null
+    tNode: null,
+    projectionNode: null
   };
 
   if ((type & LNodeFlags.ViewOrElement) === LNodeFlags.ViewOrElement && isState) {
@@ -1272,8 +1273,7 @@ export function projectionDef(index: number, selectors?: CssSelector[]): void {
  * @param selectorIndex - 0 means <ng-content> without any selector
  */
 export function projection(nodeIndex: number, localIndex: number, selectorIndex: number = 0): void {
-  const projectedNodes: LProjection = [];
-  const node = createLNode(nodeIndex, LNodeFlags.Projection, null, projectedNodes);
+  const node = createLNode(nodeIndex, LNodeFlags.Projection, null, []);
   isParent = false;  // self closing
   const currentParent = node.parent;
 
@@ -1289,12 +1289,11 @@ export function projection(nodeIndex: number, localIndex: number, selectorIndex:
     if ((nodeToProject.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Projection) {
       const previouslyProjectedNodes = (nodeToProject as LProjectionNode).data;
       for (let j = 0; j < previouslyProjectedNodes.length; j++) {
-        processProjectedNode(
-            projectedNodes, previouslyProjectedNodes[j], currentParent, currentView);
+        processProjectedNode(node, previouslyProjectedNodes[j], currentParent, currentView);
       }
     } else {
       processProjectedNode(
-          projectedNodes, nodeToProject as LElementNode | LTextNode | LContainerNode, currentParent,
+          node, nodeToProject as LElementNode | LTextNode | LContainerNode, currentParent,
           currentView);
     }
   }

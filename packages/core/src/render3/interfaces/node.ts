@@ -122,6 +122,11 @@ export interface LNode {
   query: LQuery|null;
 
   /**
+   * If this node is projected, pointer to the corresponding projection node.
+   */
+  projectionNode: LProjectionNode|null;
+
+  /**
    * Pointer to the corresponding TNode object, which stores static
    * data about this node.
    */

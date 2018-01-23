@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {assertNotNull} from './assert';
+import {assertNotEqual, assertNotNull} from './assert';
 import {LContainer, unusedValueExportToPlacateAjd as unused1} from './interfaces/container';
 import {LContainerNode, LElementNode, LNode, LNodeFlags, LProjectionNode, LTextNode, LViewNode, unusedValueExportToPlacateAjd as unused2} from './interfaces/node';
 import {LProjection, unusedValueExportToPlacateAjd as unused3} from './interfaces/projection';
@@ -30,21 +30,39 @@ const unusedValueToPlacateAjd = unused1 + unused2 + unused3 + unused4 + unused5;
 function findBeforeNode(node: LNode | null, stopNode: LNode | null): RNode|null {
   let currentNode = node;
   while (currentNode && currentNode !== stopNode) {
-    let currentSibling = currentNode.next;
-    while (currentSibling) {
-      const nativeNode = findFirstNativeNode(currentSibling);
-      if (nativeNode) {
-        return nativeNode;
+    const currentNodeType = currentNode.flags && LNodeFlags.TYPE_MASK;
+    const projectionNode = currentNode.projectionNode;
+    if (projectionNode) {
+      const siblingsArray = projectionNode.data;
+      const siblingsArrayLength = siblingsArray.length;
+      let index =
+          projectionNode.data.indexOf(currentNode as LElementNode | LTextNode | LContainerNode);
+      ngDevMode && assertNotEqual(index, -1, 'index');
+      index++;
+      while (index < siblingsArrayLength) {
+        const nativeNode = findFirstNativeNode(siblingsArray[index]);
+        if (nativeNode) {
+          return nativeNode;
+        }
+        index++;
       }
-      currentSibling = currentSibling.next;
-    }
-    const parentNode = currentNode.parent;
-    currentNode = null;
-    if (parentNode) {
-      const parentType = parentNode.flags & LNodeFlags.TYPE_MASK;
-      if (parentType === LNodeFlags.Container || parentType === LNodeFlags.View ||
-          parentType === LNodeFlags.Projection) {
-        currentNode = parentNode;
+      currentNode = projectionNode;
+    } else {
+      let currentSibling = currentNode.next;
+      while (currentSibling) {
+        const nativeNode = findFirstNativeNode(currentSibling);
+        if (nativeNode) {
+          return nativeNode;
+        }
+        currentSibling = currentSibling.next;
+      }
+      const parentNode = currentNode.parent;
+      currentNode = null;
+      if (parentNode) {
+        const parentType = parentNode.flags & LNodeFlags.TYPE_MASK;
+        if (parentType === LNodeFlags.Container || parentType === LNodeFlags.View) {
+          currentNode = parentNode;
+        }
       }
     }
   }
@@ -64,8 +82,6 @@ function findFirstNativeNode(rootNode: LNode): RNode|null {
     let nextNode: LNode|null = null;
     if (type === LNodeFlags.Element) {
       return node.native;
-    } else if (type === LNodeFlags.View) {
-      nextNode = (node as LViewNode).child;
     } else if (type === LNodeFlags.Container) {
       const childContainerData: LContainer = (node as LContainerNode).data;
       nextNode = childContainerData.views.length ? childContainerData.views[0].child : null;
@@ -430,7 +446,7 @@ export function insertChild(node: LNode, currentView: LView): void {
  * @param currentView Current LView
  */
 export function processProjectedNode(
-    projectedNodes: LProjection, node: LElementNode | LTextNode | LContainerNode,
+    projectionNode: LProjectionNode, node: LElementNode | LTextNode | LContainerNode,
     currentParent: LViewNode | LElementNode, currentView: LView): void {
   if ((node.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Container &&
       (currentParent.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Element &&
@@ -447,6 +463,7 @@ export function processProjectedNode(
       addRemoveViewFromContainer(node as LContainerNode, views[i], true, null);
     }
   }
-  projectedNodes.push(node);
+  projectionNode.data.push(node);
+  node.projectionNode = projectionNode;
   appendChild(currentParent, node.native, currentView);
 }

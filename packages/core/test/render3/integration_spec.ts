@@ -514,14 +514,12 @@ describe('render3 integration test', () => {
         afterTree: {afterLabel: 'z'}
       };
       expect(renderToHtml(parentTemplate, ctx)).toEqual('<child>apz</child>');
-      ctx.projectedTree = {
-        subTrees: [{},{},{subTrees: [{},{}]},{}]
-      };
-      ctx.beforeTree.subTrees!.push({afterLabel: "b"});
+      ctx.projectedTree = {subTrees: [{}, {}, {subTrees: [{}, {}]}, {}]};
+      ctx.beforeTree.subTrees !.push({afterLabel: 'b'});
       expect(renderToHtml(parentTemplate, ctx)).toEqual('<child>abz</child>');
-      ctx.projectedTree.subTrees![1].afterLabel = "h";
+      ctx.projectedTree.subTrees ![1].afterLabel = 'h';
       expect(renderToHtml(parentTemplate, ctx)).toEqual('<child>abhz</child>');
-      ctx.beforeTree.subTrees!.push({beforeLabel: "c"});
+      ctx.beforeTree.subTrees !.push({beforeLabel: 'c'});
       expect(renderToHtml(parentTemplate, ctx)).toEqual('<child>abchz</child>');
 
       // To check the context easily:
