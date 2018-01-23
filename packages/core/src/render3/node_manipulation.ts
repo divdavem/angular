@@ -17,36 +17,6 @@ import {assertNodeType} from './node_assert';
 const unusedValueToPlacateAjd = unused1 + unused2 + unused3 + unused4 + unused5;
 
 /**
- * Finds the closest DOM node above a given container in the hierarchy.
- *
- * This is necessary to add or remove elements from the DOM when a view
- * is added or removed from the container. e.g. parent.removeChild(...)
- *
- * @param containerNode The container node whose parent must be found
- * @returns Closest DOM node above the container
- */
-export function findNativeParent(containerNode: LContainerNode): RNode|null {
-  let container: LContainerNode|null = containerNode;
-  while (container) {
-    ngDevMode && assertNodeType(container, LNodeFlags.Container);
-    const renderParent = container.data.renderParent;
-    if (renderParent !== null) {
-      return renderParent.native;
-    }
-    const viewOrElement: LViewNode|LElementNode = container.parent !;
-    ngDevMode && assertNotNull(viewOrElement, 'container.parent');
-    if ((viewOrElement.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Element) {
-      // we are an LElement, which means we are past the last LContainer.
-      // This means than we have not been projected so just ignore.
-      return null;
-    }
-    ngDevMode && assertNodeType(viewOrElement, LNodeFlags.View);
-    container = (viewOrElement as LViewNode).parent;
-  }
-  return null;
-}
-
-/**
  * Returns the first DOM node following the given logical node in the same parent DOM element.
  *
  * This is needed in order to insert the given node with insertBefore.
@@ -139,7 +109,8 @@ export function addRemoveViewFromContainer(
     beforeNode?: RNode | null): void {
   ngDevMode && assertNodeType(container, LNodeFlags.Container);
   ngDevMode && assertNodeType(rootNode, LNodeFlags.View);
-  const parent = findNativeParent(container);
+  const parentNode = container.data.renderParent;
+  const parent = parentNode ? parentNode.native : null;
   let node: LNode|null = rootNode.child;
   if (parent) {
     while (node) {
@@ -161,6 +132,7 @@ export function addRemoveViewFromContainer(
         // if we get to a container, it must be a root node of a view because we are only
         // propagating down into child views / containers and not child elements
         const childContainerData: LContainer = (node as LContainerNode).data;
+        childContainerData.renderParent = parentNode;
         nextNode = childContainerData.views.length ? childContainerData.views[0].child : null;
       } else if (type === LNodeFlags.Projection) {
         nextNode = (node as LProjectionNode).data[0];
