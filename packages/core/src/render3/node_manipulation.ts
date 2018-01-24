@@ -9,7 +9,7 @@
 import {assertNotEqual, assertNotNull} from './assert';
 import {LContainer, unusedValueExportToPlacateAjd as unused1} from './interfaces/container';
 import {LContainerNode, LElementNode, LNode, LNodeFlags, LProjectionNode, LTextNode, LViewNode, unusedValueExportToPlacateAjd as unused2} from './interfaces/node';
-import {LProjection, unusedValueExportToPlacateAjd as unused3} from './interfaces/projection';
+import {unusedValueExportToPlacateAjd as unused3} from './interfaces/projection';
 import {ProceduralRenderer3, RElement, RNode, RText, unusedValueExportToPlacateAjd as unused4} from './interfaces/renderer';
 import {HookData, LView, LViewOrLContainer, TView, unusedValueExportToPlacateAjd as unused5} from './interfaces/view';
 import {assertNodeType} from './node_assert';
@@ -31,22 +31,17 @@ function findBeforeNode(node: LNode | null, stopNode: LNode | null): RNode|null 
   let currentNode = node;
   while (currentNode && currentNode !== stopNode) {
     const currentNodeType = currentNode.flags && LNodeFlags.TYPE_MASK;
-    const projectionNode = currentNode.projectionNode;
-    if (projectionNode) {
-      const siblingsArray = projectionNode.data;
-      const siblingsArrayLength = siblingsArray.length;
-      let index =
-          projectionNode.data.indexOf(currentNode as LElementNode | LTextNode | LContainerNode);
-      ngDevMode && assertNotEqual(index, -1, 'index');
-      index++;
-      while (index < siblingsArrayLength) {
-        const nativeNode = findFirstNativeNode(siblingsArray[index]);
+    let pNextOrParent = currentNode.pNextOrParent;
+    if (pNextOrParent) {
+      let pNextOrParentType = pNextOrParent.flags & LNodeFlags.TYPE_MASK;
+      while (pNextOrParentType !== LNodeFlags.Projection) {
+        const nativeNode = findFirstNativeNode(pNextOrParent);
         if (nativeNode) {
           return nativeNode;
         }
-        index++;
+        pNextOrParent = pNextOrParent.pNextOrParent !;
       }
-      currentNode = projectionNode;
+      currentNode = pNextOrParent;
     } else {
       let currentSibling = currentNode.next;
       while (currentSibling) {
@@ -67,6 +62,29 @@ function findBeforeNode(node: LNode | null, stopNode: LNode | null): RNode|null 
     }
   }
   return null;
+}
+
+function getNextNode(node: LNode): LNode|null {
+  const pNextOrParent = node.pNextOrParent;
+  if (pNextOrParent) {
+    const type = pNextOrParent.flags & LNodeFlags.TYPE_MASK;
+    return type === LNodeFlags.Projection ? null : pNextOrParent;
+  } else {
+    return node.next;
+  }
+}
+
+function findFollowingNode(initialNode: LNode, rootNode: LNode): LNode|null {
+  let node: LNode|null = initialNode;
+  let nextNode = getNextNode(node);
+  while (node && !nextNode) {
+    // if node.pNextOrParent is not null here, it is not the next node
+    // (because, at this point, nextNode is null, so it is the parent)
+    node = node.pNextOrParent || node.parent;
+    if (node === rootNode) node = null;
+    nextNode = node && getNextNode(node);
+  }
+  return nextNode;
 }
 
 /**
@@ -91,11 +109,7 @@ function findFirstNativeNode(rootNode: LNode): RNode|null {
       nextNode = (node as LViewNode).child;
     }
     if (nextNode === null) {
-      while (node && !node.next) {
-        node = node.parent;
-        if (node === rootNode) node = null;
-      }
-      node = node && node.next;
+      node = findFollowingNode(node, rootNode);
     } else {
       node = nextNode;
     }
@@ -160,11 +174,7 @@ export function addRemoveViewFromContainer(
         nextNode = (node as LViewNode).child;
       }
       if (nextNode === null) {
-        while (node && !node.next) {
-          node = node.parent;
-          if (node === rootNode) node = null;
-        }
-        node = node && node.next;
+        node = findFollowingNode(node, rootNode);
       } else {
         node = nextNode;
       }
@@ -467,7 +477,12 @@ export function processProjectedNode(
       addRemoveViewFromContainer(node as LContainerNode, views[i], true, null);
     }
   }
-  projectionNode.data.push(node);
-  node.projectionNode = projectionNode;
+  const projectionNodeData = projectionNode.data;
+  const projectionNodeDataLength = projectionNodeData.length;
+  if (projectionNodeDataLength > 0) {
+    projectionNodeData[projectionNodeDataLength - 1].pNextOrParent = node;
+  }
+  projectionNodeData[projectionNodeDataLength] = node;
+  node.pNextOrParent = projectionNode;
   appendChild(currentParent, node.native, currentView);
 }

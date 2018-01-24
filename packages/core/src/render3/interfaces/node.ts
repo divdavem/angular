@@ -122,9 +122,12 @@ export interface LNode {
   query: LQuery|null;
 
   /**
-   * If this node is projected, pointer to the corresponding projection node.
+   * If this node is projected, pointer to the next node in the same projection parent
+   * (which is a container, an element, or a text node), or to the parent projection node
+   * if this is the last node in the projection.
+   * If this node is not projected, this field is null.
    */
-  projectionNode: LProjectionNode|null;
+  pNextOrParent: LContainerNode|LElementNode|LTextNode|LProjectionNode|null;
 
   /**
    * Pointer to the corresponding TNode object, which stores static

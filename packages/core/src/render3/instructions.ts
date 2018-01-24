@@ -218,7 +218,7 @@ export function createLNode(
     data: isState ? state as any : null,
     query: query,
     tNode: null,
-    projectionNode: null
+    pNextOrParent: null
   };
 
   if ((type & LNodeFlags.ViewOrElement) === LNodeFlags.ViewOrElement && isState) {
