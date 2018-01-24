@@ -1264,6 +1264,27 @@ export function projectionDef(index: number, selectors?: CssSelector[]): void {
   data[index] = distributedNodes;
 }
 
+function appendToProjectionNode(
+    projectionNode: LProjectionNode,
+    appendedFirst: LElementNode | LTextNode | LContainerNode | null,
+    appendedLast: LElementNode | LTextNode | LContainerNode | null) {
+  // appendedFirst can be null if and only if appendedLast is also null
+  ngDevMode &&
+      assertEqual(!appendedFirst === !appendedLast, true, '!appendedFirst === !appendedLast');
+  if (!appendedLast) {
+    // nothing to append
+    return;
+  }
+  const projectionNodeData = projectionNode.data;
+  if (projectionNodeData.last) {
+    projectionNodeData.last.pNextOrParent = appendedFirst;
+  } else {
+    projectionNodeData.first = appendedFirst;
+  }
+  projectionNodeData.last = appendedLast;
+  appendedLast.pNextOrParent = projectionNode;
+}
+
 /**
  * Inserts previously re-distributed projected nodes. This instruction must be preceded by a call
  * to the projectionDef instruction.
@@ -1273,7 +1294,7 @@ export function projectionDef(index: number, selectors?: CssSelector[]): void {
  * @param selectorIndex - 0 means <ng-content> without any selector
  */
 export function projection(nodeIndex: number, localIndex: number, selectorIndex: number = 0): void {
-  const node = createLNode(nodeIndex, LNodeFlags.Projection, null, []);
+  const node = createLNode(nodeIndex, LNodeFlags.Projection, null, {first: null, last: null});
   isParent = false;  // self closing
   const currentParent = node.parent;
 
@@ -1284,18 +1305,26 @@ export function projection(nodeIndex: number, localIndex: number, selectorIndex:
   const nodesForSelector =
       valueInData<LNode[][]>(componentNode.data !.data !, localIndex)[selectorIndex];
 
+  // build the linked list of projected nodes:
   for (let i = 0; i < nodesForSelector.length; i++) {
     const nodeToProject = nodesForSelector[i];
     if ((nodeToProject.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Projection) {
-      const previouslyProjectedNodes = (nodeToProject as LProjectionNode).data;
-      for (let j = 0; j < previouslyProjectedNodes.length; j++) {
-        processProjectedNode(node, previouslyProjectedNodes[j], currentParent, currentView);
-      }
+      const previouslyProjected = (nodeToProject as LProjectionNode).data;
+      appendToProjectionNode(node, previouslyProjected.first, previouslyProjected.last);
     } else {
-      processProjectedNode(
-          node, nodeToProject as LElementNode | LTextNode | LContainerNode, currentParent,
-          currentView);
+      appendToProjectionNode(
+          node, nodeToProject as LTextNode | LElementNode | LContainerNode,
+          nodeToProject as LTextNode | LElementNode | LContainerNode);
     }
+  }
+
+  // process each node in the list of projected nodes:
+  let nodeToProject: LNode|null = node.data.first;
+  const lastNodeToProject = node.data.last;
+  while (nodeToProject) {
+    processProjectedNode(
+        nodeToProject as LTextNode | LElementNode | LContainerNode, currentParent, currentView);
+    nodeToProject = nodeToProject === lastNodeToProject ? null : nodeToProject.pNextOrParent;
   }
 }
 

@@ -104,7 +104,7 @@ function findFirstNativeNode(rootNode: LNode): RNode|null {
       const childContainerData: LContainer = (node as LContainerNode).data;
       nextNode = childContainerData.views.length ? childContainerData.views[0].child : null;
     } else if (type === LNodeFlags.Projection) {
-      nextNode = (node as LProjectionNode).data[0];
+      nextNode = (node as LProjectionNode).data.first;
     } else {
       nextNode = (node as LViewNode).child;
     }
@@ -169,7 +169,7 @@ export function addRemoveViewFromContainer(
         // does not keep the reference to the place where it is inserted (its parent property is
         // in the light DOM, not in the shadow DOM), and we can never append the following nodes
         // from the shadow DOM
-        nextNode = (node as LProjectionNode).data[0];
+        nextNode = (node as LProjectionNode).data.first;
       } else {
         nextNode = (node as LViewNode).child;
       }
@@ -454,14 +454,13 @@ export function insertChild(node: LNode, currentView: LView): void {
  * appends the nodes from all of the container's active views to the DOM. Also stores the
  * node in the given projectedNodes array.
  *
- * @param projectedNodes Array to store the projected node
  * @param node The node to process
  * @param currentParent The last parent element to be processed
  * @param currentView Current LView
  */
 export function processProjectedNode(
-    projectionNode: LProjectionNode, node: LElementNode | LTextNode | LContainerNode,
-    currentParent: LViewNode | LElementNode, currentView: LView): void {
+    node: LElementNode | LTextNode | LContainerNode, currentParent: LViewNode | LElementNode,
+    currentView: LView): void {
   if ((node.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Container &&
       (currentParent.flags & LNodeFlags.TYPE_MASK) === LNodeFlags.Element &&
       (currentParent.data === null || currentParent.data === currentView)) {
@@ -477,12 +476,5 @@ export function processProjectedNode(
       addRemoveViewFromContainer(node as LContainerNode, views[i], true, null);
     }
   }
-  const projectionNodeData = projectionNode.data;
-  const projectionNodeDataLength = projectionNodeData.length;
-  if (projectionNodeDataLength > 0) {
-    projectionNodeData[projectionNodeDataLength - 1].pNextOrParent = node;
-  }
-  projectionNodeData[projectionNodeDataLength] = node;
-  node.pNextOrParent = projectionNode;
   appendChild(currentParent, node.native, currentView);
 }

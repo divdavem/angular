@@ -127,7 +127,7 @@ export interface LNode {
    * if this is the last node in the projection.
    * If this node is not projected, this field is null.
    */
-  pNextOrParent: LContainerNode|LElementNode|LTextNode|LProjectionNode|null;
+  pNextOrParent: LNode|null;
 
   /**
    * Pointer to the corresponding TNode object, which stores static
