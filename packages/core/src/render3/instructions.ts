@@ -1264,6 +1264,13 @@ export function projectionDef(index: number, selectors?: CssSelector[]): void {
   data[index] = distributedNodes;
 }
 
+/**
+ * Updates the linked list of a projection node, by appending another linked list.
+ *
+ * @param projectionNode Projection node whose projected nodes linked list has to be updated
+ * @param appendedFirst First node of the linked list to append.
+ * @param appendedLast Last node of the linked list to append.
+ */
 function appendToProjectionNode(
     projectionNode: LProjectionNode,
     appendedFirst: LElementNode | LTextNode | LContainerNode | null,

@@ -64,6 +64,16 @@ function findBeforeNode(node: LNode | null, stopNode: LNode | null): RNode|null 
   return null;
 }
 
+/**
+ * Get the next node in the LNode tree, taking into account the place where a node is
+ * projected (in the shadow DOM) rather than where it comes from (in the light DOM).
+ * If the node is not projected, the return value is simply node.next.
+ * If the node is projected, the return value is node.pNextOrParent if node.pNextOrParent is
+ * not a projection node (which marks the end of the linked list).
+ * Otherwise the return value is null.
+ * @param node The node whose next node in the LNode tree must be found.
+ * @return The next sibling in the LNode tree.
+ */
 function getNextNode(node: LNode): LNode|null {
   const pNextOrParent = node.pNextOrParent;
   if (pNextOrParent) {
@@ -74,6 +84,16 @@ function getNextNode(node: LNode): LNode|null {
   }
 }
 
+/**
+ * Find the next node in the LNode tree, taking into account the place where a node is
+ * projected (in the shadow DOM) rather than where it comes from (in the light DOM).
+ * If there is no sibling node, this function goes to the next sibling of the parent node...
+ * until it reaches rootNode (at which point null is returned).
+ *
+ * @param initialNode The node whose following node in the LNode tree must be found.
+ * @param rootNode The root node at which the lookup should stop.
+ * @return The following node in the LNode tree.
+ */
 function findFollowingNode(initialNode: LNode, rootNode: LNode): LNode|null {
   let node: LNode|null = initialNode;
   let nextNode = getNextNode(node);
@@ -165,10 +185,6 @@ export function addRemoveViewFromContainer(
         childContainerData.renderParent = parentNode;
         nextNode = childContainerData.views.length ? childContainerData.views[0].child : null;
       } else if (type === LNodeFlags.Projection) {
-        // Note: when doing this, we loose access to the current node, because a projected node
-        // does not keep the reference to the place where it is inserted (its parent property is
-        // in the light DOM, not in the shadow DOM), and we can never append the following nodes
-        // from the shadow DOM
         nextNode = (node as LProjectionNode).data.first;
       } else {
         nextNode = (node as LViewNode).child;
