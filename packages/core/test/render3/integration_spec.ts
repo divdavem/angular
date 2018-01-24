@@ -462,7 +462,7 @@ describe('render3 integration test', () => {
         template: function ChildComponentTemplate(
             ctx: {beforeTree: Tree, afterTree: Tree}, cm: boolean) {
           if (cm) {
-            m(0, pD());
+            pD(0);
             C(1);
             P(2, 0);
             C(3);
