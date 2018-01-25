@@ -1050,15 +1050,14 @@ export function containerRefreshStart(index: number): void {
   isParent = true;
   const container = previousOrParentNode as LContainerNode;
   container.data.nextIndex = 0;
+  ngDevMode && assertEqual(
+      container.data.nextNative === undefined, true, 'container.data.nextNative === undefined');
 
   // We need to execute init hooks here so ngOnInit hooks are called in top level views
   // before they are called in embedded views (for backwards compatibility).
   executeInitHooks(currentView);
 
   container.data.nextIndex = 0;
-  ngDevMode &&
-      assertEqual(
-          container.data.nextNative === undefined, true, 'container.data.nextNative === undefined');
 }
 
 /**
