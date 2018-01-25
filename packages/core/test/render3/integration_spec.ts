@@ -459,6 +459,7 @@ describe('render3 integration test', () => {
       afterTree: Tree;
       static ngComponentDef = defineComponent({
         tag: 'child',
+        type: ChildComponent,
         template: function ChildComponentTemplate(
             ctx: {beforeTree: Tree, afterTree: Tree}, cm: boolean) {
           if (cm) {
@@ -503,7 +504,7 @@ describe('render3 integration test', () => {
       }
       cr();
       ChildComponent.ngComponentDef.h(1, 0);
-      ChildComponent.ngComponentDef.r(1, 0);
+      r(1, 0);
     }
 
     it('should work with a tree', () => {

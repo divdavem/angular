@@ -422,7 +422,7 @@ describe('content projection', () => {
            e();
          }
          Child.ngComponentDef.h(1, 0);
-         Child.ngComponentDef.r(1, 0);
+         r(1, 0);
        });
        const parent = renderComponent(Parent);
        expect(toHtml(parent)).toEqual('<child><div>before-content-after</div></child>');
