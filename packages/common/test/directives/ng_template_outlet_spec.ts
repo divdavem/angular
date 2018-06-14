@@ -124,6 +124,22 @@ import {expect} from '@angular/platform-browser/testing/src/matchers';
          detectChangesAndExpectText('was here');
        }));
 
+    it('should not change the previous context when receiving a new context', () => {
+      const template =
+        `<ng-template let-content="content" #tpl>{{content}}</ng-template>` +
+        `<ng-container *ngTemplateOutlet="tpl; context: context"></ng-container>`;
+      fixture = createTestComponent(template);
+
+      const initialContext = {content: 'first'};
+      fixture.componentInstance.context = initialContext;
+      detectChangesAndExpectText('first');
+
+      fixture.componentInstance.context = {content: 'second'};
+      detectChangesAndExpectText('second');
+
+      expect(initialContext.content).toBe('first');
+    });
+
     it('should update but not destroy embedded view when context values change', () => {
       const template =
           `<ng-template let-foo="foo" #tpl><destroyable-cmpt></destroyable-cmpt>:{{foo}}</ng-template>` +

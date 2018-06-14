@@ -52,7 +52,7 @@ export class NgTemplateOutlet implements OnChanges {
 
       if (this.ngTemplateOutlet) {
         this._viewRef = this._viewContainerRef.createEmbeddedView(
-            this.ngTemplateOutlet, this.ngTemplateOutletContext);
+            this.ngTemplateOutlet, Object.assign({}, this.ngTemplateOutletContext));
       }
     } else {
       if (this._viewRef && this.ngTemplateOutletContext) {
