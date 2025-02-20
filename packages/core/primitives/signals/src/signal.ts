@@ -13,10 +13,9 @@ import {
   producerIncrementEpoch,
   producerNotifyConsumers,
   producerUpdatesAllowed,
-  REACTIVE_NODE,
-  ReactiveNode,
   SIGNAL,
 } from './graph';
+import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 
 // Required as the signals library is in a separate package, so we need to explicitly ensure the
 // global `ngDevMode` type is defined.

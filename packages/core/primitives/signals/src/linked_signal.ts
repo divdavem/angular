@@ -14,10 +14,9 @@ import {
   producerAccessed,
   producerMarkClean,
   producerUpdateValueVersion,
-  REACTIVE_NODE,
-  ReactiveNode,
   SIGNAL,
 } from './graph';
+import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 import {signalSetFn, signalUpdateFn} from './signal';
 
 export type ComputationFn<S, D> = (source: S, previous?: {source: S; value: D}) => D;

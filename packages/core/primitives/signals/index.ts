@@ -17,10 +17,9 @@ export {
 } from './src/linked_signal';
 export {ValueEqualityFn, defaultEquals} from './src/equality';
 export {setThrowInvalidWriteToSignalError} from './src/errors';
+export {REACTIVE_NODE, ReactiveNode} from './src/reactive_node';
 export {
-  REACTIVE_NODE,
   Reactive,
-  ReactiveNode,
   SIGNAL,
   consumerAfterComputation,
   consumerBeforeComputation,

@@ -12,11 +12,10 @@ import {
   consumerBeforeComputation,
   producerAccessed,
   producerUpdateValueVersion,
-  REACTIVE_NODE,
-  ReactiveNode,
   setActiveConsumer,
   SIGNAL,
 } from './graph';
+import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 
 /**
  * A computation, which derives a value from a declarative reactive expression.

@@ -13,10 +13,9 @@ import {
   consumerMarkDirty,
   consumerPollProducersForChange,
   isInNotificationPhase,
-  REACTIVE_NODE,
-  ReactiveNode,
   SIGNAL,
 } from './graph';
+import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 
 /**
  * A cleanup function that can be optionally registered from the watch logic. If registered, the
