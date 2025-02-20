@@ -6,6 +6,10 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {
+  Signal as InteropSignal,
+  watchSignal as interopWatchSignal,
+} from '@amadeus-it-group/tansu/interop';
 import {defaultEquals, ValueEqualityFn} from './equality';
 import {throwInvalidWriteToSignalError} from './errors';
 import {
@@ -15,6 +19,7 @@ import {
   producerUpdatesAllowed,
   SIGNAL,
 } from './graph';
+import {interopWatch} from './interop_watch';
 import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 
 // Required as the signals library is in a separate package, so we need to explicitly ensure the
@@ -29,7 +34,7 @@ declare const ngDevMode: boolean | undefined;
  */
 let postSignalSetFn: (() => void) | null = null;
 
-export interface SignalNode<T> extends ReactiveNode {
+export interface SignalNode<T> extends ReactiveNode, InteropSignal<T> {
   value: T;
   equal: ValueEqualityFn<T>;
 }
@@ -96,6 +101,7 @@ export function runPostSignalSetFn(): void {
 export const SIGNAL_NODE: SignalNode<unknown> = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
+    [interopWatchSignal]: interopWatch,
     equal: defaultEquals,
     value: undefined,
     kind: 'signal',

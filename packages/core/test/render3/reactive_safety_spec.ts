@@ -24,7 +24,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {getActiveConsumer} from '@angular/core/primitives/signals';
+import {hasCurrentConsumer} from '@amadeus-it-group/tansu/interop';
 import {createInjector} from '@angular/core/src/di/create_injector';
 import {setUseMicrotaskEffectsByDefault} from '@angular/core/src/render3/reactivity/effect';
 import {TestBed} from '@angular/core/testing';
@@ -80,7 +80,7 @@ describe('reactive safety', () => {
       })
       class TestCmp {
         constructor() {
-          expect(getActiveConsumer()).toBe(null);
+          expect(hasCurrentConsumer()).toBe(false);
         }
       }
 
@@ -95,7 +95,7 @@ describe('reactive safety', () => {
       })
       class TestCmp {
         constructor() {
-          expect(getActiveConsumer()).toBe(null);
+          expect(hasCurrentConsumer()).toBe(false);
         }
       }
 
@@ -143,7 +143,7 @@ describe('reactive safety', () => {
       })
       class GuestCmp {
         ngOnDestroy(): void {
-          expect(getActiveConsumer()).toBe(null);
+          expect(hasCurrentConsumer()).toBe(false);
         }
       }
 
@@ -159,7 +159,7 @@ describe('reactive safety', () => {
       @Injectable()
       class Service {
         constructor() {
-          expect(getActiveConsumer()).toBe(null);
+          expect(hasCurrentConsumer()).toBe(false);
         }
       }
 
@@ -174,7 +174,7 @@ describe('reactive safety', () => {
           {
             provide: token,
             useFactory: () => {
-              expect(getActiveConsumer()).toBe(null);
+              expect(hasCurrentConsumer()).toBe(false);
               return '';
             },
           },
@@ -190,7 +190,7 @@ describe('reactive safety', () => {
           [
             {
               provide: ENVIRONMENT_INITIALIZER,
-              useValue: () => expect(getActiveConsumer()).toBe(null),
+              useValue: () => expect(hasCurrentConsumer()).toBe(false),
               multi: true,
             },
           ],
@@ -203,7 +203,7 @@ describe('reactive safety', () => {
       @NgModule({})
       class TestModule {
         constructor() {
-          expect(getActiveConsumer()).toBe(null);
+          expect(hasCurrentConsumer()).toBe(false);
         }
       }
       expectNotToThrowInReactiveContext(() =>
@@ -215,7 +215,7 @@ describe('reactive safety', () => {
       @Injectable()
       class Service {
         ngOnDestroy(): void {
-          expect(getActiveConsumer()).toBe(null);
+          expect(hasCurrentConsumer()).toBe(false);
         }
       }
       const injector = createEnvironmentInjector([Service], TestBed.inject(EnvironmentInjector));
@@ -236,7 +236,7 @@ describe('reactive safety', () => {
 
       const cmp = TestBed.createComponent(TestCmp).componentInstance;
       cmp.output.subscribe(() => {
-        expect(getActiveConsumer()).toBe(null);
+        expect(hasCurrentConsumer()).toBe(false);
       });
       expectNotToThrowInReactiveContext(() => cmp.output.emit(''));
     });

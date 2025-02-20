@@ -6,6 +6,10 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {
+  Signal as InteropSignal,
+  watchSignal as interopWatchSignal,
+} from '@amadeus-it-group/tansu/interop';
 import {COMPUTING, ERRORED, UNSET} from './computed';
 import {defaultEquals, ValueEqualityFn} from './equality';
 import {
@@ -16,12 +20,13 @@ import {
   producerUpdateValueVersion,
   SIGNAL,
 } from './graph';
+import {interopWatch} from './interop_watch';
 import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 import {signalSetFn, signalUpdateFn} from './signal';
 
 export type ComputationFn<S, D> = (source: S, previous?: {source: S; value: D}) => D;
 
-export interface LinkedSignalNode<S, D> extends ReactiveNode {
+export interface LinkedSignalNode<S, D> extends ReactiveNode, InteropSignal<D> {
   /**
    * Value of the source signal that was used to derive the computed value.
    */
@@ -114,6 +119,7 @@ export const LINKED_SIGNAL_NODE = /* @__PURE__ */ (() => {
     dirty: true,
     error: null,
     equal: defaultEquals,
+    [interopWatchSignal]: interopWatch,
 
     producerMustRecompute(node: LinkedSignalNode<unknown, unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the

@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {
   DEFER_BLOCK_ID,
@@ -197,7 +197,7 @@ export function ɵɵdeferWhen(rawValue: unknown) {
 
   const bindingIndex = nextBindingIndex();
   if (bindingUpdated(lView, bindingIndex, rawValue)) {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       const value = Boolean(rawValue); // handle truthy or falsy values
       const lDetails = getLDeferBlockDetails(lView, tNode);
@@ -213,7 +213,7 @@ export function ɵɵdeferWhen(rawValue: unknown) {
         triggerDeferBlock(TriggerType.Regular, lView, tNode);
       }
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 }
@@ -235,7 +235,7 @@ export function ɵɵdeferPrefetchWhen(rawValue: unknown) {
   const bindingIndex = nextBindingIndex();
 
   if (bindingUpdated(lView, bindingIndex, rawValue)) {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       const value = Boolean(rawValue); // handle truthy or falsy values
       const tView = lView[TVIEW];
@@ -246,7 +246,7 @@ export function ɵɵdeferPrefetchWhen(rawValue: unknown) {
         triggerPrefetching(tDetails, lView, tNode);
       }
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 }
@@ -278,7 +278,7 @@ export function ɵɵdeferHydrateWhen(rawValue: unknown) {
       triggerDeferBlock(TriggerType.Hydrate, lView, tNode);
     } else {
       const injector = lView[INJECTOR];
-      const prevConsumer = setActiveConsumer(null);
+      const prevConsumer = startRunWithConsumer(null);
       try {
         const value = Boolean(rawValue); // handle truthy or falsy values
         if (value === true) {
@@ -291,7 +291,7 @@ export function ɵɵdeferHydrateWhen(rawValue: unknown) {
           triggerHydrationFromBlockName(injector, ssrUniqueId);
         }
       } finally {
-        setActiveConsumer(prevConsumer);
+        prevConsumer();
       }
     }
   }

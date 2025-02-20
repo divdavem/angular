@@ -6,7 +6,8 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer, SIGNAL} from '@angular/core/primitives/signals';
+import {SIGNAL} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {InputSignalWithTransform} from '../../authoring/input/input_signal';
 import {InputSignalNode} from '../../authoring/input/input_signal_node';
@@ -21,7 +22,7 @@ export function writeToDirectiveInput<T>(
   publicName: string,
   value: unknown,
 ) {
-  const prevConsumer = setActiveConsumer(null);
+  const prevConsumer = startRunWithConsumer(null);
   try {
     if (ngDevMode) {
       if (!def.inputs.hasOwnProperty(publicName)) {
@@ -67,6 +68,6 @@ export function writeToDirectiveInput<T>(
       applyValueToInputField(instance, inputSignalNode, privateName, value);
     }
   } finally {
-    setActiveConsumer(prevConsumer);
+    prevConsumer();
   }
 }

@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {getActiveConsumer} from '@angular/core/primitives/signals';
+import {hasCurrentConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {RuntimeError, RuntimeErrorCode} from '../../errors';
 
@@ -21,7 +21,7 @@ import {RuntimeError, RuntimeErrorCode} from '../../errors';
 export function assertNotInReactiveContext(debugFn: Function, extraContext?: string): void {
   // Taking a `Function` instead of a string name here prevents the un-minified name of the function
   // from being retained in the bundle regardless of minification.
-  if (getActiveConsumer() !== null) {
+  if (hasCurrentConsumer()) {
     throw new RuntimeError(
       RuntimeErrorCode.ASSERTION_NOT_INSIDE_REACTIVE_CONTEXT,
       ngDevMode &&

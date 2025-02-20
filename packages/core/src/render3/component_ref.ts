@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {ChangeDetectorRef} from '../change_detection/change_detector_ref';
 import {
@@ -229,7 +229,7 @@ export class ComponentFactory<T> extends AbstractComponentFactory<T> {
   ): AbstractComponentRef<T> {
     profiler(ProfilerEvent.DynamicComponentStart);
 
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       const cmpDef = this.componentDef;
       ngDevMode && verifyNotAnOrphanComponent(cmpDef);
@@ -347,7 +347,7 @@ export class ComponentFactory<T> extends AbstractComponentFactory<T> {
 
       return new ComponentRef(this.componentType, rootLView);
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 }

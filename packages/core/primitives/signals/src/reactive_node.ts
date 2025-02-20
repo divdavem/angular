@@ -16,6 +16,7 @@ export const REACTIVE_NODE: ReactiveNode = {
   producerLastReadVersion: undefined,
   producerIndexOfThis: undefined,
   nextProducerIndex: 0,
+  hasInteropSignalDep: false,
   liveConsumerNode: undefined,
   liveConsumerIndexOfThis: undefined,
   consumerAllowSignalWrites: false,
@@ -25,6 +26,8 @@ export const REACTIVE_NODE: ReactiveNode = {
   producerRecomputeValue: () => {},
   consumerMarkedDirty: () => {},
   consumerOnSignalRead: () => {},
+  producerOnAccess: () => {},
+  producerOnNoLongerLive: () => {},
 };
 
 /**
@@ -99,6 +102,11 @@ export interface ReactiveNode {
   nextProducerIndex: number;
 
   /**
+   * Whether this consumer has any interop signals as dependencies.
+   */
+  hasInteropSignalDep: boolean;
+
+  /**
    * Array of consumers of this producer that are "live" (they require push notifications).
    *
    * `liveConsumerNode.length` is effectively our reference count for this node.
@@ -134,6 +142,9 @@ export interface ReactiveNode {
    * Called when a signal is read within this consumer.
    */
   consumerOnSignalRead(node: unknown): void;
+
+  producerOnAccess(node: unknown): void;
+  producerOnNoLongerLive(node: unknown): void;
 
   /**
    * A debug name for the reactive node. Used in Angular DevTools to identify the node.

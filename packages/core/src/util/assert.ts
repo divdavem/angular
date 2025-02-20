@@ -10,7 +10,7 @@
 // about state in an instruction are correct before implementing any logic.
 // They are meant only to be called in dev mode as sanity checks.
 
-import {getActiveConsumer} from '@angular/core/primitives/signals';
+import {hasCurrentConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {stringify} from './stringify';
 
@@ -143,7 +143,7 @@ export function assertOneOf(value: any, ...validValues: any[]) {
 }
 
 export function assertNotReactive(fn: string): void {
-  if (getActiveConsumer() !== null) {
+  if (hasCurrentConsumer()) {
     throwError(`${fn}() should never be called in a reactive context.`);
   }
 }

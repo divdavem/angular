@@ -12,6 +12,7 @@ ts_library(
         "//packages/core",
         "//packages/core/primitives/signals",
         "//packages/core/src/util",
+        "@npm//@amadeus-it-group/tansu",
     ],
 )
 

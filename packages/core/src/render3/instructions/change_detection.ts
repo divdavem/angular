@@ -6,12 +6,12 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {hasCurrentConsumer} from '@amadeus-it-group/tansu/interop';
 import {
   consumerAfterComputation,
   consumerBeforeComputation,
   consumerDestroy,
   consumerPollProducersForChange,
-  getActiveConsumer,
   ReactiveNode,
 } from '@angular/core/primitives/signals';
 
@@ -209,13 +209,13 @@ export function refreshView<T>(
   // - We might be descending into a view that needs a consumer.
   enterView(lView);
   let returnConsumerToPool = true;
-  let prevConsumer: ReactiveNode | null = null;
+  let prevConsumer: (() => void) | null = null;
   let currentConsumer: ReactiveLViewConsumer | null = null;
   if (!isInCheckNoChangesPass) {
     if (viewShouldHaveReactiveConsumer(tView)) {
       currentConsumer = getOrBorrowReactiveLViewConsumer(lView);
       prevConsumer = consumerBeforeComputation(currentConsumer);
-    } else if (getActiveConsumer() === null) {
+    } else if (!hasCurrentConsumer()) {
       // If the current view should not have a reactive consumer but we don't have an active consumer,
       // we still need to create a temporary consumer to track any signal reads in this template.
       // This is a rare case that can happen with `viewContainerRef.createEmbeddedView(...).detectChanges()`.

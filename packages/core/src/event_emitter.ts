@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 import {PartialObserver, Subject, Subscription} from 'rxjs';
 
 import {OutputRef} from './authoring/output/output_ref';
@@ -131,11 +131,11 @@ class EventEmitter_ extends Subject<any> implements OutputRef<any> {
   }
 
   emit(value?: any) {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       super.next(value);
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 

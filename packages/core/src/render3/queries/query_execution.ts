@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 import {LView, TView} from '../interfaces/view';
 import {DirectiveDef, RenderFlags, ViewQueriesFunction} from '../interfaces/definition';
 import {assertDefined} from '../../util/assert';
@@ -18,7 +18,7 @@ import {isContentQueryHost} from '../interfaces/type_checks';
 export function refreshContentQueries(tView: TView, lView: LView): void {
   const contentQueries = tView.contentQueries;
   if (contentQueries !== null) {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       for (let i = 0; i < contentQueries.length; i += 2) {
         const queryStartIdx = contentQueries[i];
@@ -33,7 +33,7 @@ export function refreshContentQueries(tView: TView, lView: LView): void {
         }
       }
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 }
@@ -45,17 +45,17 @@ export function executeViewQueryFn<T>(
 ): void {
   ngDevMode && assertDefined(viewQueryFn, 'View queries function to execute must be defined.');
   setCurrentQueryIndex(0);
-  const prevConsumer = setActiveConsumer(null);
+  const prevConsumer = startRunWithConsumer(null);
   try {
     viewQueryFn(flags, component);
   } finally {
-    setActiveConsumer(prevConsumer);
+    prevConsumer();
   }
 }
 
 export function executeContentQueries(tView: TView, tNode: TNode, lView: LView) {
   if (isContentQueryHost(tNode)) {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       const start = tNode.directiveStart;
       const end = tNode.directiveEnd;
@@ -72,7 +72,7 @@ export function executeContentQueries(tView: TView, tNode: TNode, lView: LView) 
         }
       }
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 }

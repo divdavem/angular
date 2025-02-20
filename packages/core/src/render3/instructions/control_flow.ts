@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {TrackByFunction} from '../../change_detection';
 import {formatRuntimeError, RuntimeErrorCode} from '../../errors';
@@ -67,7 +67,7 @@ export function ɵɵconditional<T>(matchingTemplateIndex: number, contextValue?:
   const viewInContainerIdx = 0;
 
   if (bindingUpdated(hostLView, bindingIndex, matchingTemplateIndex)) {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       // The index of the view to show changed - remove the previously displayed one
       // (it is a noop if there are no active views in a container).
@@ -98,7 +98,7 @@ export function ɵɵconditional<T>(matchingTemplateIndex: number, contextValue?:
         );
       }
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   } else if (prevContainer !== undefined) {
     // We might keep displaying the same template but the actual value of the expression could have
@@ -367,7 +367,7 @@ class LiveCollectionLContainerImpl extends LiveCollection<
  * @codeGenApi
  */
 export function ɵɵrepeater(collection: Iterable<unknown> | undefined | null): void {
-  const prevConsumer = setActiveConsumer(null);
+  const prevConsumer = startRunWithConsumer(null);
   const metadataSlotIdx = getSelectedIndex();
   try {
     const hostLView = getLView();
@@ -443,7 +443,7 @@ export function ɵɵrepeater(collection: Iterable<unknown> | undefined | null): 
       }
     }
   } finally {
-    setActiveConsumer(prevConsumer);
+    prevConsumer();
   }
 }
 

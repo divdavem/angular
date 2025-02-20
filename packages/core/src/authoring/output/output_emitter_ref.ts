@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {inject} from '../../di/injector_compatibility';
 import {ErrorHandler} from '../../error_handler';
@@ -81,7 +81,7 @@ export class OutputEmitterRef<T> implements OutputRef<T> {
       return;
     }
 
-    const previousConsumer = setActiveConsumer(null);
+    const previousConsumer = startRunWithConsumer(null);
     try {
       for (const listenerFn of this.listeners) {
         try {
@@ -91,7 +91,7 @@ export class OutputEmitterRef<T> implements OutputRef<T> {
         }
       }
     } finally {
-      setActiveConsumer(previousConsumer);
+      previousConsumer();
     }
   }
 }

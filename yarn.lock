@@ -156,6 +156,9 @@
   dependencies:
     "@algolia/client-common" "5.20.2"
 
+"@amadeus-it-group/tansu@file:../tansu/dist/package":
+  version "2.0.0"
+
 "@ampproject/remapping@2.3.0", "@ampproject/remapping@^2.2.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.3.0.tgz#ed441b6fa600072520ce18b43d2c8cc8caecc7f4"

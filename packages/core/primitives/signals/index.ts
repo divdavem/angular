@@ -26,7 +26,6 @@ export {
   consumerDestroy,
   consumerMarkDirty,
   consumerPollProducersForChange,
-  getActiveConsumer,
   isInNotificationPhase,
   isReactive,
   producerAccessed,
@@ -35,7 +34,6 @@ export {
   producerNotifyConsumers,
   producerUpdateValueVersion,
   producerUpdatesAllowed,
-  setActiveConsumer,
 } from './src/graph';
 export {
   SIGNAL_NODE,

@@ -9,10 +9,8 @@
 import '../util/ng_jit_mode';
 import '../util/ng_server_mode';
 
-import {
-  setActiveConsumer,
-  setThrowInvalidWriteToSignalError,
-} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
+import {setThrowInvalidWriteToSignalError} from '@angular/core/primitives/signals';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
 
@@ -595,7 +593,7 @@ export class ApplicationRef {
       );
     }
 
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       this._runningTick = true;
       this.synchronize();
@@ -611,7 +609,7 @@ export class ApplicationRef {
       this._runningTick = false;
       this.tracingSnapshot?.dispose();
       this.tracingSnapshot = null;
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
       this.afterTick.next();
 
       profiler(ProfilerEvent.ChangeDetectionEnd);

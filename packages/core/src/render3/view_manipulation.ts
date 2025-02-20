@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {Injector} from '../di/injector';
 import {DehydratedContainerView} from '../hydration/interfaces';
@@ -29,7 +29,7 @@ export function createAndRenderEmbeddedLView<T>(
     dehydratedView?: DehydratedContainerView | null;
   },
 ): LView<T> {
-  const prevConsumer = setActiveConsumer(null);
+  const prevConsumer = startRunWithConsumer(null);
   try {
     const embeddedTView = templateTNode.tView!;
     ngDevMode && assertDefined(embeddedTView, 'TView must be defined for a template node.');
@@ -66,7 +66,7 @@ export function createAndRenderEmbeddedLView<T>(
 
     return embeddedLView;
   } finally {
-    setActiveConsumer(prevConsumer);
+    prevConsumer();
   }
 }
 

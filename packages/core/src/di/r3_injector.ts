@@ -72,7 +72,7 @@ import {
 } from './provider_collection';
 import {ProviderToken} from './provider_token';
 import {INJECTOR_SCOPE, InjectorScope} from './scope';
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 /**
  * Marker which indicates that a value has not yet been created from the factory function.
@@ -243,7 +243,7 @@ export class R3Injector extends EnvironmentInjector {
 
     // Set destroyed = true first, in case lifecycle hooks re-enter destroy().
     this._destroyed = true;
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       // Call all the lifecycle hooks.
       for (const service of this._ngOnDestroyHooks) {
@@ -261,7 +261,7 @@ export class R3Injector extends EnvironmentInjector {
       this.records.clear();
       this._ngOnDestroyHooks.clear();
       this.injectorDefTypes.clear();
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 
@@ -374,7 +374,7 @@ export class R3Injector extends EnvironmentInjector {
 
   /** @internal */
   resolveInjectorInitializers() {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     const previousInjector = setCurrentInjector(this);
     const previousInjectImplementation = setInjectImplementation(undefined);
     let prevInjectContext: InjectorProfilerContext | undefined;
@@ -400,7 +400,7 @@ export class R3Injector extends EnvironmentInjector {
       setCurrentInjector(previousInjector);
       setInjectImplementation(previousInjectImplementation);
       ngDevMode && setInjectorProfilerContext(prevInjectContext!);
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 
@@ -467,7 +467,7 @@ export class R3Injector extends EnvironmentInjector {
   }
 
   private hydrate<T>(token: ProviderToken<T>, record: Record<T>): T {
-    const prevConsumer = setActiveConsumer(null);
+    const prevConsumer = startRunWithConsumer(null);
     try {
       if (ngDevMode && record.value === CIRCULAR) {
         throwCyclicDependencyError(stringify(token));
@@ -488,7 +488,7 @@ export class R3Injector extends EnvironmentInjector {
       }
       return record.value as T;
     } finally {
-      setActiveConsumer(prevConsumer);
+      prevConsumer();
     }
   }
 

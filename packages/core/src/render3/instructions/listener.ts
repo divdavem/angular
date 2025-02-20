@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {NotificationSource} from '../../change_detection/scheduling/zoneless_scheduling';
 import {assertIndexInRange} from '../../util/assert';
@@ -264,7 +264,7 @@ function executeListenerWithErrorHandling(
   listenerFn: (e?: any) => any,
   e: any,
 ): boolean {
-  const prevConsumer = setActiveConsumer(null);
+  const prevConsumer = startRunWithConsumer(null);
   try {
     profiler(ProfilerEvent.OutputStart, context, listenerFn);
     // Only explicitly returning false from a listener should preventDefault
@@ -274,7 +274,7 @@ function executeListenerWithErrorHandling(
     return false;
   } finally {
     profiler(ProfilerEvent.OutputEnd, context, listenerFn);
-    setActiveConsumer(prevConsumer);
+    prevConsumer();
   }
 }
 

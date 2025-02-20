@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {startRunWithConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {
   AfterContentChecked,
@@ -285,11 +285,11 @@ function callHooks(
  */
 function callHookInternal(directive: any, hook: () => void) {
   profiler(ProfilerEvent.LifecycleHookStart, directive, hook);
-  const prevConsumer = setActiveConsumer(null);
+  const prevConsumer = startRunWithConsumer(null);
   try {
     hook.call(directive);
   } finally {
-    setActiveConsumer(prevConsumer);
+    prevConsumer();
     profiler(ProfilerEvent.LifecycleHookEnd, directive, hook);
   }
 }

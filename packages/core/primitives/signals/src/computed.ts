@@ -6,15 +6,20 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {
+  Signal as InteropSignal,
+  watchSignal as interopWatchSignal,
+  startRunWithConsumer,
+} from '@amadeus-it-group/tansu/interop';
 import {defaultEquals, ValueEqualityFn} from './equality';
 import {
   consumerAfterComputation,
   consumerBeforeComputation,
   producerAccessed,
   producerUpdateValueVersion,
-  setActiveConsumer,
   SIGNAL,
 } from './graph';
+import {interopWatch} from './interop_watch';
 import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 
 /**
@@ -22,7 +27,7 @@ import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
  *
  * `Computed`s are both producers and consumers of reactivity.
  */
-export interface ComputedNode<T> extends ReactiveNode {
+export interface ComputedNode<T> extends ReactiveNode, InteropSignal<T> {
   /**
    * Current value of the computation, or one of the sentinel values above (`UNSET`, `COMPUTING`,
    * `ERROR`).
@@ -102,6 +107,7 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
     error: null,
     equal: defaultEquals,
     kind: 'computed',
+    [interopWatchSignal]: interopWatch,
 
     producerMustRecompute(node: ComputedNode<unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the
@@ -125,7 +131,7 @@ const COMPUTED_NODE = /* @__PURE__ */ (() => {
         newValue = node.computation();
         // We want to mark this node as errored if calling `equal` throws; however, we don't want
         // to track any reactive reads inside `equal`.
-        setActiveConsumer(null);
+        startRunWithConsumer(null);
         wasEqual =
           oldValue !== UNSET &&
           oldValue !== ERRORED &&
