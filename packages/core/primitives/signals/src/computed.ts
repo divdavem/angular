@@ -6,6 +6,11 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {
+  Consumer as InteropConsumer,
+  Signal as InteropSignal,
+  setActiveConsumer,
+} from './interop_lib';
 import {defaultEquals, ValueEqualityFn} from './equality';
 import {
   consumerAfterComputation,
@@ -14,16 +19,16 @@ import {
   producerUpdateValueVersion,
   REACTIVE_NODE,
   ReactiveNode,
-  setActiveConsumer,
   SIGNAL,
 } from './graph';
+import {CONSUMER_NODE, PRODUCER_NODE} from './interop';
 
 /**
  * A computation, which derives a value from a declarative reactive expression.
  *
  * `Computed`s are both producers and consumers of reactivity.
  */
-export interface ComputedNode<T> extends ReactiveNode {
+export interface ComputedNode<T> extends ReactiveNode, InteropConsumer, InteropSignal<T> {
   /**
    * Current value of the computation, or one of the sentinel values above (`UNSET`, `COMPUTING`,
    * `ERROR`).
@@ -62,11 +67,7 @@ export function createComputed<T>(computation: () => T): ComputedGetter<T> {
     // Record that someone looked at this signal.
     producerAccessed(node);
 
-    if (node.value === ERRORED) {
-      throw node.error;
-    }
-
-    return node.value;
+    return node.producerValue(node);
   };
   (computed as ComputedGetter<T>)[SIGNAL] = node;
   return computed as unknown as ComputedGetter<T>;
@@ -98,11 +99,20 @@ export const ERRORED: any = /* @__PURE__ */ Symbol('ERRORED');
 const COMPUTED_NODE = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
+    ...PRODUCER_NODE,
+    ...CONSUMER_NODE,
     value: UNSET,
     dirty: true,
     error: null,
     equal: defaultEquals,
     kind: 'computed',
+
+    producerValue: (node: ComputedNode<unknown>) => {
+      if (node.value === ERRORED) {
+        throw node.error;
+      }
+      return node.value;
+    },
 
     producerMustRecompute(node: ComputedNode<unknown>): boolean {
       // Force a recomputation if there's no current value, or if the current value is in the
