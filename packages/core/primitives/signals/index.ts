@@ -27,7 +27,6 @@ export {
   consumerDestroy,
   consumerMarkDirty,
   consumerPollProducersForChange,
-  getActiveConsumer,
   isInNotificationPhase,
   isReactive,
   producerAccessed,
@@ -36,7 +35,6 @@ export {
   producerNotifyConsumers,
   producerUpdateValueVersion,
   producerUpdatesAllowed,
-  setActiveConsumer,
 } from './src/graph';
 export {
   SIGNAL_NODE,
@@ -50,3 +48,4 @@ export {
 } from './src/signal';
 export {Watch, WatchCleanupFn, WatchCleanupRegisterFn, createWatch} from './src/watch';
 export {setAlternateWeakRefImpl} from './src/weak_ref';
+export {PRODUCER_NODE, CONSUMER_NODE} from './src/interop';

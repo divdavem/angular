@@ -6,7 +6,9 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {Consumer as InteropConsumer} from '@amadeus-it-group/tansu/interop';
 import {
+  CONSUMER_NODE,
   REACTIVE_NODE,
   ReactiveNode,
   SIGNAL,
@@ -214,7 +216,7 @@ export function effect(
   return effectRef;
 }
 
-export interface EffectNode extends ReactiveNode, SchedulableEffect {
+export interface EffectNode extends ReactiveNode, SchedulableEffect, InteropConsumer {
   hasRun: boolean;
   cleanupFns: EffectCleanupFn[] | undefined;
   injector: Injector;
@@ -247,6 +249,7 @@ export const APP_EFFECT_SCHEDULER = /* @__PURE__ */ new InjectionToken('', {
 export const BASE_EFFECT_NODE: Omit<EffectNode, 'fn' | 'destroy' | 'injector' | 'notifier'> =
   /* @__PURE__ */ (() => ({
     ...REACTIVE_NODE,
+    ...CONSUMER_NODE,
     consumerIsAlwaysLive: true,
     consumerAllowSignalWrites: true,
     dirty: true,

@@ -24,7 +24,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {getActiveConsumer} from '@angular/core/primitives/signals';
+import {getActiveConsumer} from '@amadeus-it-group/tansu/interop';
 import {createInjector} from '@angular/core/src/di/create_injector';
 import {setUseMicrotaskEffectsByDefault} from '@angular/core/src/render3/reactivity/effect';
 import {TestBed} from '@angular/core/testing';
