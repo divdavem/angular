@@ -19,6 +19,7 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
+    "@amadeus-it-group/tansu": "*",
     "rxjs": "^6.5.3 || ^7.4.0",
     "zone.js": "~0.15.0"
   },

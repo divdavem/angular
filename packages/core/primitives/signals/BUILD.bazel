@@ -14,6 +14,9 @@ ts_library(
             "**/*.ts",
         ],
     ),
+    deps = [
+        "@npm//@amadeus-it-group/tansu",
+    ],
 )
 
 tsec_test(

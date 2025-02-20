@@ -6,6 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {Consumer as InteropConsumer} from '@amadeus-it-group/tansu/interop';
 import {
   consumerAfterComputation,
   consumerBeforeComputation,
@@ -16,6 +17,7 @@ import {
   SIGNAL,
 } from './graph';
 import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
+import {CONSUMER_NODE} from './consumer_node';
 
 /**
  * A cleanup function that can be optionally registered from the watch logic. If registered, the
@@ -50,7 +52,7 @@ export interface Watch {
 
   [SIGNAL]: WatchNode;
 }
-export interface WatchNode extends ReactiveNode {
+export interface WatchNode extends ReactiveNode, InteropConsumer {
   hasRun: boolean;
   fn: ((onCleanup: WatchCleanupRegisterFn) => void) | null;
   schedule: ((watch: Watch) => void) | null;
@@ -136,6 +138,7 @@ const NOOP_CLEANUP_FN: WatchCleanupFn = () => {};
 const WATCH_NODE: Partial<WatchNode> = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
+    ...CONSUMER_NODE,
     consumerIsAlwaysLive: true,
     consumerAllowSignalWrites: false,
     consumerMarkedDirty: (node: WatchNode) => {

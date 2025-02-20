@@ -6,6 +6,10 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
+import {
+  Consumer as InteropConsumer,
+  Signal as InteropSignal,
+} from '@amadeus-it-group/tansu/interop';
 import {defaultEquals, ValueEqualityFn} from './equality';
 import {
   consumerAfterComputation,
@@ -16,13 +20,15 @@ import {
   SIGNAL,
 } from './graph';
 import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
+import {PRODUCER_NODE} from './producer_node';
+import {CONSUMER_NODE} from './consumer_node';
 
 /**
  * A computation, which derives a value from a declarative reactive expression.
  *
  * `Computed`s are both producers and consumers of reactivity.
  */
-export interface ComputedNode<T> extends ReactiveNode {
+export interface ComputedNode<T> extends ReactiveNode, InteropConsumer, InteropSignal<T> {
   /**
    * Current value of the computation, or one of the sentinel values above (`UNSET`, `COMPUTING`,
    * `ERROR`).
@@ -97,6 +103,8 @@ export const ERRORED: any = /* @__PURE__ */ Symbol('ERRORED');
 const COMPUTED_NODE = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
+    ...PRODUCER_NODE,
+    ...CONSUMER_NODE,
     value: UNSET,
     dirty: true,
     error: null,

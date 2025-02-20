@@ -11,9 +11,8 @@ import {
   consumerBeforeComputation,
   consumerDestroy,
   consumerPollProducersForChange,
-  getActiveConsumer,
-  ReactiveNode,
 } from '@angular/core/primitives/signals';
+import {getActiveConsumer, Consumer} from '@amadeus-it-group/tansu/interop';
 
 import {RuntimeError, RuntimeErrorCode} from '../../errors';
 import {assertDefined, assertEqual} from '../../util/assert';
@@ -209,7 +208,7 @@ export function refreshView<T>(
   // - We might be descending into a view that needs a consumer.
   enterView(lView);
   let returnConsumerToPool = true;
-  let prevConsumer: ReactiveNode | null = null;
+  let prevConsumer: Consumer | null = null;
   let currentConsumer: ReactiveLViewConsumer | null = null;
   if (!isInCheckNoChangesPass) {
     if (viewShouldHaveReactiveConsumer(tView)) {

@@ -6,7 +6,8 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer, SIGNAL} from '@angular/core/primitives/signals';
+import {SIGNAL} from '@angular/core/primitives/signals';
+import {setActiveConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {InputSignalWithTransform} from '../../authoring/input/input_signal';
 import {InputSignalNode} from '../../authoring/input/input_signal_node';

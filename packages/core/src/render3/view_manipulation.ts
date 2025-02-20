@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {setActiveConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {Injector} from '../di/injector';
 import {DehydratedContainerView} from '../hydration/interfaces';

@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 
-import {getActiveConsumer} from '@angular/core/primitives/signals';
+import {getActiveConsumer} from '@amadeus-it-group/tansu/interop';
 
 import {RuntimeError, RuntimeErrorCode} from '../../errors';
 

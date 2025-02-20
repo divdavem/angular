@@ -20,6 +20,7 @@ ts_library(
         "//packages/core/src/interface",
         "//packages/zone.js/lib:zone_d_ts",
         "@npm//rxjs",
+        "@npm//@amadeus-it-group/tansu",
     ],
 )
 

@@ -72,7 +72,7 @@ import {
 } from './provider_collection';
 import {ProviderToken} from './provider_token';
 import {INJECTOR_SCOPE, InjectorScope} from './scope';
-import {setActiveConsumer} from '@angular/core/primitives/signals';
+import {setActiveConsumer} from '@amadeus-it-group/tansu/interop';
 
 /**
  * Marker which indicates that a value has not yet been created from the factory function.
