@@ -30,6 +30,7 @@ describe('interop', () => {
     console.log('a.set(1)');
     a.set(1);
     expect(counter).toEqual(1);
+    e.run();
     expect(c()).toEqual(2);
     e.destroy();
   });

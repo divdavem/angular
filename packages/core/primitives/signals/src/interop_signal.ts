@@ -20,6 +20,7 @@ export function interopSignal<T>(signal: InteropSignal<T>): ReactiveNode {
 
 export interface InteropSignalNode<T> extends ReactiveNode {
   computing: boolean;
+  started: boolean;
   watcher: InteropWatcher<T>;
 }
 
@@ -30,6 +31,7 @@ const INTEROP_SIGNAL_NODE = /* @__PURE__ */ (() => {
   return {
     ...REACTIVE_NODE,
     dirty: true,
+    started: false,
     computing: false,
     kind: 'interop_signal',
     watcher: null!,
@@ -64,10 +66,22 @@ const INTEROP_SIGNAL_NODE = /* @__PURE__ */ (() => {
       producerUpdateValueVersion(node);
     },
 
-    producerOnNoLongerLive(node: InteropSignalNode<unknown>) {
-      console.log('producerOnNoLongerLive');
+    producerStartLive(node: InteropSignalNode<unknown>) {
+      console.log('producerStartLive');
+      if (!node.started) {
+        node.started = true;
+        node.watcher.start();
+        node.producerRecomputeValue(node);
+      }
+    },
+
+    producerStopLive(node: InteropSignalNode<unknown>) {
+      console.log('producerStopLive');
       node.dirty = true;
-      node.watcher.suspend();
+      if (node.started) {
+        node.started = false;
+        node.watcher.stop();
+      }
     },
   } satisfies InteropSignalNode<any>;
 })();

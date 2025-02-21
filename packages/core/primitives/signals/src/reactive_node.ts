@@ -27,7 +27,8 @@ export const REACTIVE_NODE: ReactiveNode = {
   consumerMarkedDirty: () => {},
   consumerOnSignalRead: () => {},
   producerOnAccess: () => {},
-  producerOnNoLongerLive: () => {},
+  producerStartLive: () => {},
+  producerStopLive: () => {},
 };
 
 /**
@@ -144,7 +145,8 @@ export interface ReactiveNode {
   consumerOnSignalRead(node: unknown): void;
 
   producerOnAccess(node: unknown): void;
-  producerOnNoLongerLive(node: unknown): void;
+  producerStartLive(node: unknown): void;
+  producerStopLive(node: unknown): void;
 
   /**
    * A debug name for the reactive node. Used in Angular DevTools to identify the node.

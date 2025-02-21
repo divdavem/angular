@@ -1,6 +1,7 @@
 import {Signal as InteropSignal, Watcher as InteropWatcher} from '@amadeus-it-group/tansu/interop';
 import {isInNotificationPhase, producerAccessed, producerUpdateValueVersion} from './graph';
-import {ERRORED, ReactiveNode, Version} from './reactive_node';
+import {ReactiveNode, Version} from './reactive_node';
+import {ERRORED} from './computed';
 import {createWatch, Watch} from './watch';
 
 class Watcher<T> implements InteropWatcher<T> {
@@ -35,12 +36,12 @@ class Watcher<T> implements InteropWatcher<T> {
   }
 
   update(): boolean {
-    let watch = this._watch;
-    if (!watch) {
-      watch = createWatch(this._watchFn, this._markDirty, true);
-      this._watch = watch;
+    const watch = this._watch;
+    if (watch) {
+      watch.run();
+    } else {
+      producerUpdateValueVersion(this._node);
     }
-    watch.run();
     const changed = this._version !== this._node.version;
     this._version = this._node.version;
     this._upToDate = true;
@@ -61,7 +62,15 @@ class Watcher<T> implements InteropWatcher<T> {
     return node.value;
   }
 
-  suspend(): void {
+  start(): void {
+    let watch = this._watch;
+    if (!watch) {
+      watch = createWatch(this._watchFn, this._markDirty, true);
+      this._watch = watch;
+    }
+  }
+
+  stop(): void {
     this._upToDate = false;
     const watch = this._watch;
     if (watch) {

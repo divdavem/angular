@@ -210,17 +210,19 @@ export function consumerBeforeComputation(node: ReactiveNode | null): () => void
   node.nextProducerIndex = 0;
   node.hasInteropSignalDep = false;
 
-  return startRunWithConsumer((signal) => {
-    let producer =
-      signal[interopWatchSignal] === interopWatch
-        ? (signal as any as ReactiveNode)
-        : interopSignalMap.get(signal);
-    if (!producer) {
-      producer = interopSignal(signal);
-      interopSignalMap.set(signal, producer);
-    }
-    producer.producerOnAccess(producer);
-    internalProducerAccessed(producer, node);
+  return startRunWithConsumer({
+    addProducer(signal) {
+      let producer =
+        signal[interopWatchSignal] === interopWatch
+          ? (signal as any as ReactiveNode)
+          : interopSignalMap.get(signal);
+      if (!producer) {
+        producer = interopSignal(signal);
+        interopSignalMap.set(signal, producer);
+      }
+      producer.producerOnAccess(producer);
+      internalProducerAccessed(producer, node);
+    },
   });
 }
 
@@ -329,14 +331,19 @@ function producerAddLiveConsumer(
   indexOfThis: number,
 ): number {
   assertProducerNode(node);
-  if (node.liveConsumerNode.length === 0 && isConsumerNode(node)) {
+  const startLive = node.liveConsumerNode.length === 0;
+  if (startLive && isConsumerNode(node)) {
     // When going from 0 to 1 live consumers, we become a live consumer to our producers.
     for (let i = 0; i < node.producerNode.length; i++) {
       node.producerIndexOfThis[i] = producerAddLiveConsumer(node.producerNode[i], node, i);
     }
   }
   node.liveConsumerIndexOfThis.push(indexOfThis);
-  return node.liveConsumerNode.push(consumer) - 1;
+  const res = node.liveConsumerNode.push(consumer) - 1;
+  if (startLive) {
+    node.producerStartLive(node);
+  }
+  return res;
 }
 
 /**
@@ -351,8 +358,8 @@ function producerRemoveLiveConsumerAtIndex(node: ReactiveNode, idx: number): voi
     );
   }
 
-  const noLongerLive = node.liveConsumerNode.length === 1 && isConsumerNode(node);
-  if (noLongerLive) {
+  const stopLive = node.liveConsumerNode.length === 1;
+  if (stopLive && isConsumerNode(node)) {
     // When removing the last live consumer, we will no longer be live. We need to remove
     // ourselves from our producers' tracking (which may cause consumer-producers to lose
     // liveness as well).
@@ -380,8 +387,8 @@ function producerRemoveLiveConsumerAtIndex(node: ReactiveNode, idx: number): voi
     consumer.producerIndexOfThis[idxProducer] = idx;
   }
 
-  if (noLongerLive) {
-    node.producerOnNoLongerLive(node);
+  if (stopLive) {
+    node.producerStopLive(node);
   }
 }
 
