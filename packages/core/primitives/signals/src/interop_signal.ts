@@ -9,10 +9,12 @@ import {REACTIVE_NODE, ReactiveNode} from './reactive_node';
 export function interopSignal<T>(signal: InteropSignal<T>): ReactiveNode {
   const node: InteropSignalNode<T> = Object.create(INTEROP_SIGNAL_NODE);
   node.watcher = signal[interopWatchSignal](() => {
+    console.log('notify!! node.dirty = ', node.dirty);
     if (!node.dirty) {
       consumerMarkDirty(node);
     }
   });
+  console.log('creating interopSignal', signal);
   return node;
 }
 
@@ -38,6 +40,7 @@ const INTEROP_SIGNAL_NODE = /* @__PURE__ */ (() => {
     },
 
     producerRecomputeValue(node: InteropSignalNode<unknown>): void {
+      console.log('producerRecomputeValue');
       if (node.computing) {
         // Our computation somehow led to a cyclic read of itself.
         throw new Error('Detected cycle in computations.');
@@ -48,6 +51,7 @@ const INTEROP_SIGNAL_NODE = /* @__PURE__ */ (() => {
       try {
         const watcher = node.watcher;
         differentValue = watcher.update();
+        console.log('watcher.update() =', differentValue);
       } finally {
         node.computing = false;
         if (differentValue) {
@@ -61,6 +65,7 @@ const INTEROP_SIGNAL_NODE = /* @__PURE__ */ (() => {
     },
 
     producerOnNoLongerLive(node: InteropSignalNode<unknown>) {
+      console.log('producerOnNoLongerLive');
       node.dirty = true;
       node.watcher.suspend();
     },
