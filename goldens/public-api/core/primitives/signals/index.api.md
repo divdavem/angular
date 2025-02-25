@@ -4,14 +4,17 @@
 
 ```ts
 
-// @public
+import { Consumer } from '@amadeus-it-group/tansu/interop';
+import { Signal } from '@amadeus-it-group/tansu/interop';
+
+// @public (undocumented)
 export type ComputationFn<S, D> = (source: S, previous?: {
     source: S;
     value: D;
 }) => D;
 
 // @public
-export interface ComputedNode<T> extends ReactiveNode {
+export interface ComputedNode<T> extends ReactiveNode, Consumer, Signal<T> {
     computation: () => T;
     // (undocumented)
     equal: ValueEqualityFn<T>;
@@ -19,11 +22,14 @@ export interface ComputedNode<T> extends ReactiveNode {
     value: T;
 }
 
-// @public
-export function consumerAfterComputation(node: ReactiveNode | null, prevConsumer: ReactiveNode | null): void;
+// @public (undocumented)
+export const CONSUMER_NODE: Consumer;
 
 // @public
-export function consumerBeforeComputation(node: ReactiveNode | null): ReactiveNode | null;
+export function consumerAfterComputation(node: ReactiveNode | null, prevConsumer: Consumer | null): void;
+
+// @public
+export function consumerBeforeComputation(node: (ReactiveNode & Consumer) | null): Consumer | null;
 
 // @public
 export function consumerDestroy(node: ReactiveNode): void;
@@ -50,9 +56,6 @@ export function createWatch(fn: (onCleanup: WatchCleanupRegisterFn) => void, sch
 export function defaultEquals<T>(a: T, b: T): boolean;
 
 // @public (undocumented)
-export function getActiveConsumer(): ReactiveNode | null;
-
-// @public (undocumented)
 export function isInNotificationPhase(): boolean;
 
 // @public (undocumented)
@@ -64,7 +67,7 @@ export type LinkedSignalGetter<S, D> = (() => D) & {
 };
 
 // @public (undocumented)
-export interface LinkedSignalNode<S, D> extends ReactiveNode {
+export interface LinkedSignalNode<S, D> extends ReactiveNode, Consumer, Signal<D> {
     computation: ComputationFn<S, D>;
     // (undocumented)
     equal: ValueEqualityFn<D>;
@@ -80,8 +83,11 @@ export function linkedSignalSetFn<S, D>(node: LinkedSignalNode<S, D>, newValue: 
 // @public (undocumented)
 export function linkedSignalUpdateFn<S, D>(node: LinkedSignalNode<S, D>, updater: (value: D) => D): void;
 
+// @public (undocumented)
+export const PRODUCER_NODE: Signal<any>;
+
 // @public
-export function producerAccessed(node: ReactiveNode): void;
+export function producerAccessed<T>(node: ReactiveNode & Signal<T>): void;
 
 // @public
 export function producerIncrementEpoch(): void;
@@ -117,6 +123,7 @@ export interface ReactiveNode {
     consumerOnSignalRead(node: unknown): void;
     debugName?: string;
     dirty: boolean;
+    hasInteropSignalDep: boolean;
     kind: string;
     lastCleanEpoch: Version;
     liveConsumerIndexOfThis: number[] | undefined;
@@ -127,15 +134,20 @@ export interface ReactiveNode {
     producerMustRecompute(node: unknown): boolean;
     producerNode: ReactiveNode[] | undefined;
     // (undocumented)
+    producerOnAccess(node: unknown): void;
+    // (undocumented)
     producerRecomputeValue(node: unknown): void;
+    // (undocumented)
+    producerStartLive(node: unknown): void;
+    // (undocumented)
+    producerStopLive(node: unknown): void;
+    // (undocumented)
+    producerValue(node: unknown): unknown;
     version: Version;
 }
 
 // @public (undocumented)
 export function runPostSignalSetFn(): void;
-
-// @public (undocumented)
-export function setActiveConsumer(consumer: ReactiveNode | null): ReactiveNode | null;
 
 // @public (undocumented)
 export function setAlternateWeakRefImpl(impl: unknown): void;
@@ -159,7 +171,7 @@ export interface SignalGetter<T> extends SignalBaseGetter<T> {
 }
 
 // @public (undocumented)
-export interface SignalNode<T> extends ReactiveNode {
+export interface SignalNode<T> extends ReactiveNode, Signal<T> {
     // (undocumented)
     equal: ValueEqualityFn<T>;
     // (undocumented)
