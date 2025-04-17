@@ -28,7 +28,7 @@ let activeConsumer: ReactiveNode | null = null;
 let isAngularActive: boolean = false;
 let inNotificationPhase = false;
 
-const angularLibrary: ConsumerLibrary = {
+export const angularLibrary: ConsumerLibrary = {
   onActiveChange: (active) => {
     isAngularActive = active;
   },
@@ -50,9 +50,6 @@ let epoch: Version = 1 as Version;
  */
 export const SIGNAL = /* @__PURE__ */ Symbol('SIGNAL');
 
-const hasActiveConsumer = (): boolean =>
-  isAngularActive ? !!activeConsumer : interopHasActiveConsumer();
-
 export const setActiveConsumer = (consumer: ReactiveNode | null): (() => void) => {
   if ((activeConsumer === consumer && isAngularActive) || (!consumer && !hasActiveConsumer())) {
     return noop;
@@ -66,8 +63,11 @@ export const setActiveConsumer = (consumer: ReactiveNode | null): (() => void) =
   };
 };
 
-export function getActiveConsumer(): ReactiveNode | null {
-  return activeConsumer;
+export const hasActiveConsumer = (): boolean =>
+  isAngularActive ? !!activeConsumer : interopHasActiveConsumer();
+
+export function getAngularActiveConsumer(): ReactiveNode | null {
+  return isAngularActive ? activeConsumer : null;
 }
 
 export function isInNotificationPhase(): boolean {
@@ -276,7 +276,7 @@ export function producerAccessed<T>(node: ReactiveNode): void {
   }
 }
 
-function internalProducerAccessed(node: ReactiveNode, activeConsumer: ReactiveNode): void {
+export function internalProducerAccessed(node: ReactiveNode, activeConsumer: ReactiveNode): void {
   activeConsumer.consumerOnSignalRead(node);
 
   // This producer is the `idx`th dependency of `activeConsumer`.
